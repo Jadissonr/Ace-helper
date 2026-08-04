@@ -54,12 +54,21 @@ def main():
         sys.exit()
 
     try:
+        from gui.auth_window import AuthWindow
         from gui.main_window import MainWindow
+        from core.auth import is_device_authorized
     except Exception as e:
         import traceback
         traceback.print_exc()  # também imprime no console, se houver um
         _avisar_dependencia_faltando(f"{type(e).__name__}: {e}")
         sys.exit(1)
+
+    if not is_device_authorized():
+        auth = AuthWindow()
+        auth.mainloop()
+
+        if not auth.authenticated:
+            sys.exit()
 
     app = MainWindow()
     app.mainloop()

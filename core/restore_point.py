@@ -10,8 +10,11 @@ usamos PowerShell por baixo (mesma abordagem usada pelo WinUtil).
 
 import subprocess
 import datetime
+import os
 
 from core.logger import log
+
+_NO_WINDOW_FLAGS = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
 
 
 def create_restore_point(description: str = None):
@@ -47,7 +50,8 @@ try {{
     try:
         result = subprocess.run(
             ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", powershell_script],
-            capture_output=True, text=True, timeout=120
+            capture_output=True, text=True, timeout=120,
+            creationflags=_NO_WINDOW_FLAGS
         )
 
         output = result.stdout.strip()

@@ -4,16 +4,19 @@ Monta a interface com abas: Instalar Jogos, Tweaks e Debloat.
 """
 
 import os
-import sys
+import threading
 import customtkinter as ctk
 from PIL import Image
 
+from core.paths import resource_path
+from core.feedback import open_feedback_page
+from core.updater import check_for_update, open_releases_page
 from gui.installer_tab import InstallerTab
 from gui.tweaks_tab import TweaksTab
 from gui.debloat_tab import DebloatTab
 
 APP_NAME = "ACE Helper"
-APP_VERSION = "0.3.0"
+APP_VERSION = "0.4.0"
 
 # Paleta preto + roxo claro
 BG_COLOR = "#0a0a0c"
@@ -21,17 +24,8 @@ SURFACE_COLOR = "#151517"
 ACCENT_COLOR = "#a78bfa"
 ACCENT_HOVER = "#8b6cf0"
 
-
-def _resource_path(relative_path: str) -> str:
-    """Resolve o caminho de um asset tanto rodando do código-fonte
-    quanto rodando de dentro de um .exe compilado com PyInstaller
-    (que extrai os arquivos pra uma pasta temporária em sys._MEIPASS)."""
-    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    return os.path.join(base_path, relative_path)
-
-
-LOGO_PATH = _resource_path(os.path.join("assets", "logo_transparent.png"))
-ICON_PATH = _resource_path(os.path.join("assets", "icon.ico"))
+LOGO_PATH = resource_path("assets", "logo_transparent.png")
+ICON_PATH = resource_path("assets", "icon.ico")
 
 
 class MainWindow(ctk.CTk):
@@ -53,6 +47,7 @@ class MainWindow(ctk.CTk):
                 pass  # iconbitmap com .ico só funciona no Windows; ignora fora dele
 
         self._build_ui()
+        self._check_update_async()
 
     def _build_ui(self):
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -84,11 +79,24 @@ class MainWindow(ctk.CTk):
 
         subheader = ctk.CTkLabel(
             title_frame,
-            text="Otimização, debloat e instalação de plataformas de jogos para Windows",
+            text="Otimização, debloat e instalação de apps essenciais para gamers e profissionais de esports",
             font=ctk.CTkFont(size=12),
             text_color="gray60"
         )
         subheader.pack(anchor="w", pady=(2, 0))
+
+        btn_feedback = ctk.CTkButton(
+            header_frame, text="💬 Feedback", command=self._on_feedback,
+            fg_color="transparent", border_width=1, border_color=ACCENT_COLOR,
+            text_color=ACCENT_COLOR, hover_color=SURFACE_COLOR,
+            width=110
+        )
+        btn_feedback.pack(side="right", anchor="n")
+
+        # Espaço reservado pro aviso de atualização (populado depois,
+        # em segundo plano, se houver uma versão nova disponível).
+        self.update_banner_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.update_banner_frame.pack(fill="x", padx=20)
 
         tabview = ctk.CTkTabview(
             self,
@@ -101,10 +109,44 @@ class MainWindow(ctk.CTk):
         )
         tabview.pack(fill="both", expand=True, padx=15, pady=15)
 
-        tab_instalar = tabview.add("Instalar Jogos")
+        tab_instalar = tabview.add("Instalar Apps")
         tab_tweaks = tabview.add("Tweaks")
         tab_debloat = tabview.add("Debloat")
 
         InstallerTab(tab_instalar).pack(fill="both", expand=True)
         TweaksTab(tab_tweaks).pack(fill="both", expand=True)
         DebloatTab(tab_debloat).pack(fill="both", expand=True)
+
+    def _on_feedback(self):
+        sucesso, mensagem = open_feedback_page()
+        if not sucesso:
+            from tkinter import messagebox
+            messagebox.showerror("Feedback", mensagem)
+
+    def _check_update_async(self):
+        thread = threading.Thread(target=self._run_check_update, daemon=True)
+        thread.start()
+
+    def _run_check_update(self):
+        tem_atualizacao, versao, _mensagem = check_for_update(APP_VERSION)
+        if tem_atualizacao:
+            self.after(0, self._show_update_banner, versao)
+
+    def _show_update_banner(self, versao):
+        banner = ctk.CTkFrame(self.update_banner_frame, fg_color="#2a2433", corner_radius=8)
+        banner.pack(fill="x", pady=(0, 8))
+
+        inner = ctk.CTkFrame(banner, fg_color="transparent")
+        inner.pack(fill="x", padx=12, pady=8)
+
+        label = ctk.CTkLabel(
+            inner, text=f"🔔 Nova versão disponível: {versao} (você está na {APP_VERSION})",
+            font=ctk.CTkFont(size=11), text_color=ACCENT_COLOR
+        )
+        label.pack(side="left")
+
+        btn_baixar = ctk.CTkButton(
+            inner, text="Baixar atualização", command=open_releases_page,
+            fg_color=ACCENT_COLOR, hover_color=ACCENT_HOVER, width=150, height=26
+        )
+        btn_baixar.pack(side="right")

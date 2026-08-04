@@ -15,6 +15,7 @@ from core.tweaks import (
     get_standard_tweaks, WINREG_AVAILABLE
 )
 from core.restore_point import create_restore_point
+from core.power_plan import enable_ultimate_performance, restore_balanced_plan, get_active_plan_name
 
 ACCENT_COLOR = "#a78bfa"
 ACCENT_HOVER = "#8b6cf0"
@@ -31,6 +32,7 @@ class TweaksTab(ctk.CTkFrame):
 
         self._build_ui()
         self._refresh_status()
+        self._refresh_power_status()
 
     def _build_ui(self):
         aviso = ctk.CTkLabel(
@@ -65,6 +67,34 @@ class TweaksTab(ctk.CTkFrame):
             font=ctk.CTkFont(size=11), text_color="gray60"
         )
         standard_lbl.pack(side="left", padx=(10, 0))
+
+        power_frame = ctk.CTkFrame(self, fg_color="#1e1e21", corner_radius=10)
+        power_frame.pack(fill="x", padx=5, pady=(10, 4))
+
+        power_inner = ctk.CTkFrame(power_frame, fg_color="transparent")
+        power_inner.pack(fill="x", padx=12, pady=10)
+
+        power_title = ctk.CTkLabel(
+            power_inner, text="⚙️ Plano de Energia", font=ctk.CTkFont(size=12, weight="bold")
+        )
+        power_title.pack(side="left")
+
+        self.power_status_lbl = ctk.CTkLabel(
+            power_inner, text="...", font=ctk.CTkFont(size=11), text_color="gray60"
+        )
+        self.power_status_lbl.pack(side="left", padx=(10, 0))
+
+        self.btn_ultimate = ctk.CTkButton(
+            power_inner, text="Ativar Ultimate Performance", command=self._on_ativar_ultimate,
+            fg_color=ACCENT_COLOR, hover_color=ACCENT_HOVER, width=190
+        )
+        self.btn_ultimate.pack(side="right", padx=(6, 0))
+
+        self.btn_balanceado = ctk.CTkButton(
+            power_inner, text="Restaurar Balanceado", command=self._on_restaurar_balanceado,
+            fg_color="transparent", border_width=1, width=170
+        )
+        self.btn_balanceado.pack(side="right")
 
         list_frame = ctk.CTkScrollableFrame(self, fg_color="#151517")
         list_frame.pack(fill="both", expand=True, padx=5, pady=5)
@@ -126,6 +156,45 @@ class TweaksTab(ctk.CTkFrame):
         self.log_box.insert("end", text + "\n")
         self.log_box.see("end")
         self.log_box.configure(state="disabled")
+
+    def _refresh_power_status(self):
+        if not WINREG_AVAILABLE:
+            self.power_status_lbl.configure(text="indisponível")
+            return
+        nome = get_active_plan_name()
+        self.power_status_lbl.configure(text=f"Ativo: {nome}" if nome else "não foi possível checar")
+
+    def _on_ativar_ultimate(self):
+        if not WINREG_AVAILABLE:
+            messagebox.showerror("Indisponível", "Este módulo só funciona rodando no Windows.")
+            return
+
+        self.btn_ultimate.configure(state="disabled")
+        self.btn_balanceado.configure(state="disabled")
+        self._append_log("Ativando plano Ultimate Performance...")
+
+        thread = threading.Thread(target=self._run_power_action, args=(enable_ultimate_performance,), daemon=True)
+        thread.start()
+
+    def _on_restaurar_balanceado(self):
+        if not WINREG_AVAILABLE:
+            messagebox.showerror("Indisponível", "Este módulo só funciona rodando no Windows.")
+            return
+
+        self.btn_ultimate.configure(state="disabled")
+        self.btn_balanceado.configure(state="disabled")
+        self._append_log("Restaurando plano Balanceado...")
+
+        thread = threading.Thread(target=self._run_power_action, args=(restore_balanced_plan,), daemon=True)
+        thread.start()
+
+    def _run_power_action(self, funcao):
+        sucesso, mensagem = funcao()
+        status = "OK" if sucesso else "ERRO"
+        self.after(0, self._append_log, f"[{status}] {mensagem}")
+        self.after(0, self._refresh_power_status)
+        self.after(0, lambda: self.btn_ultimate.configure(state="normal"))
+        self.after(0, lambda: self.btn_balanceado.configure(state="normal"))
 
     def _refresh_status(self):
         if not WINREG_AVAILABLE:

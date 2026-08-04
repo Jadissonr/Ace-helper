@@ -1,3 +1,7 @@
 # ACE Helper roda com a biblioteca padrão do Python (subprocess, winreg,
-# ctypes) mais o CustomTkinter para a interface moderna.
+# ctypes) mais o CustomTkinter para a interface moderna e o Pillow para
+# carregar a logo/ícone (declarado explicitamente pois algumas versões
+# do customtkinter não puxam o Pillow automaticamente como dependência).
 customtkinter>=5.2.0
+Pillow>=10.0.0
+requests>=2.31.0

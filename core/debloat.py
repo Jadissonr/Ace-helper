@@ -18,6 +18,11 @@ from core.logger import log
 
 DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "debloat_list.json")
 
+# No Windows, esconde a janela de console que cada chamada de PowerShell
+# abriria por padrão (o app roda sem console próprio, então sem isso
+# cada verificação de status abre uma janela preta piscando na tela).
+_NO_WINDOW_FLAGS = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+
 
 def load_debloat_list():
     """Carrega a lista de apps disponíveis para remoção a partir do JSON."""
@@ -35,7 +40,8 @@ def _run_powershell(script: str, timeout: int = 60):
     try:
         result = subprocess.run(
             ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script],
-            capture_output=True, text=True, timeout=timeout
+            capture_output=True, text=True, timeout=timeout,
+            creationflags=_NO_WINDOW_FLAGS
         )
         return result.returncode, result.stdout.strip(), result.stderr.strip()
     except FileNotFoundError:
