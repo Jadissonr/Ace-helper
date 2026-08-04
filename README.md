@@ -35,9 +35,9 @@ Debloat, que mexem no registro do Windows).
 Antes de qualquer alteração no sistema, o ACE Helper cria
 automaticamente um ponto de restauração do Windows.
 
-## Quer contribuir ou entender o código?
+## Documentação técnica
 
-Toda a documentação técnica (como rodar a partir do código-fonte,
+Documentação de desenvolvimento (como rodar a partir do código-fonte,
 estrutura do projeto, como compilar, como configurar a chave de
 acesso, como publicar uma nova versão) está em
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
