@@ -1,11 +1,11 @@
 # ACE Helper - Instalador rápido via PowerShell
-# Uso (depois de publicado no GitHub):
-#   irm https://raw.githubusercontent.com/SEU_USUARIO/ace-helper/main/install.ps1 | iex
+# Uso:
+#   irm https://raw.githubusercontent.com/Jadissonr/Ace-helper/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
 # --- CONFIGURE AQUI depois de criar o repositório ---
-$repo = "SEU_USUARIO/ace-helper"
+$repo = "Jadissonr/Ace-helper"
 # -----------------------------------------------------
 
 Write-Host "ACE Helper - baixando última versão..." -ForegroundColor Cyan
