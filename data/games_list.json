@@ -1,0 +1,37 @@
+[
+  {
+    "categoria": "Plataformas",
+    "nome": "Steam",
+    "winget_id": "Valve.Steam"
+  },
+  {
+    "categoria": "Plataformas",
+    "nome": "Epic Games Launcher",
+    "winget_id": "EpicGames.EpicGamesLauncher"
+  },
+  {
+    "categoria": "Plataformas",
+    "nome": "Ubisoft Connect",
+    "winget_id": "Ubisoft.Connect"
+  },
+  {
+    "categoria": "Plataformas",
+    "nome": "EA App",
+    "winget_id": "ElectronicArts.EADesktop"
+  },
+  {
+    "categoria": "Plataformas",
+    "nome": "GOG Galaxy",
+    "winget_id": "GOG.Galaxy"
+  },
+  {
+    "categoria": "Plataformas",
+    "nome": "Battle.net",
+    "winget_id": "Blizzard.BattleNet"
+  },
+  {
+    "categoria": "Plataformas",
+    "nome": "Riot Client",
+    "winget_id": "RiotGames.RiotClient"
+  }
+]

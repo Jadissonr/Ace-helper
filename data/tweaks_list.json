@@ -1,0 +1,298 @@
+[
+  {
+    "id": "disable_telemetry",
+    "nome": "Desativar telemetria do Windows",
+    "descricao": "Reduz a coleta de dados de uso enviada para a Microsoft.",
+    "entries": [
+      {
+        "hive": "HKEY_LOCAL_MACHINE",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+        "value_name": "AllowTelemetry",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": 1
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_game_dvr",
+    "nome": "Desativar Game DVR / Xbox Game Bar",
+    "descricao": "Desliga a gravação em segundo plano do Xbox Game Bar, que consome recursos durante jogos.",
+    "entries": [
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "System\\GameConfigStore",
+        "value_name": "GameDVR_Enabled",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": 1
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_startup_delay",
+    "nome": "Remover atraso de inicialização de programas",
+    "descricao": "Remove o delay artificial que o Windows aplica antes de abrir programas de inicialização.",
+    "entries": [
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize",
+        "value_name": "StartupDelayInMSec",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": 1
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_transparency",
+    "nome": "Desativar efeitos de transparência",
+    "descricao": "Desliga a transparência visual da interface, reduzindo uso de GPU.",
+    "entries": [
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        "value_name": "EnableTransparency",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": 1
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_cortana",
+    "nome": "Desativar Cortana",
+    "descricao": "Impede que a Cortana seja carregada e usada no sistema.",
+    "entries": [
+      {
+        "hive": "HKEY_LOCAL_MACHINE",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search",
+        "value_name": "AllowCortana",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": 1
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_background_apps",
+    "nome": "Desativar apps em segundo plano",
+    "descricao": "Impede que apps da Store continuem rodando em segundo plano consumindo recursos.",
+    "entries": [
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications",
+        "value_name": "GlobalUserDisabled",
+        "value_type": "DWORD",
+        "value_ativado": 1,
+        "value_original": 0
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "show_file_extensions",
+    "nome": "Mostrar extensões de arquivo",
+    "descricao": "Exibe a extensão dos arquivos no Explorer (ex: .exe, .txt), útil para identificar tipos de arquivo com segurança.",
+    "entries": [
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "value_name": "HideFileExt",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": 1
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_web_search_start_menu",
+    "nome": "Desativar busca na web no Menu Iniciar",
+    "descricao": "Impede que o Menu Iniciar mostre resultados do Bing junto com os resultados locais.",
+    "entries": [
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+        "value_name": "BingSearchEnabled",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": 1
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_activity_history",
+    "nome": "Desativar Histórico de Atividades",
+    "descricao": "Apaga e para de coletar documentos recentes, histórico da área de transferência e de execução. (Baseado no WinUtil)",
+    "entries": [
+      {
+        "hive": "HKEY_LOCAL_MACHINE",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "value_name": "EnableActivityFeed",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": null
+      },
+      {
+        "hive": "HKEY_LOCAL_MACHINE",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "value_name": "PublishUserActivities",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": null
+      },
+      {
+        "hive": "HKEY_LOCAL_MACHINE",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "value_name": "UploadUserActivities",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": null
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_consumer_features",
+    "nome": "Desativar Consumer Features",
+    "descricao": "Impede que o Windows instale automaticamente jogos, apps de terceiros ou sugestões da Store para o usuário. (Baseado no WinUtil)",
+    "entries": [
+      {
+        "hive": "HKEY_LOCAL_MACHINE",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+        "value_name": "DisableWindowsConsumerFeatures",
+        "value_type": "DWORD",
+        "value_ativado": 1,
+        "value_original": null
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_delivery_optimization",
+    "nome": "Desativar Delivery Optimization",
+    "descricao": "Impede que o Windows use sua banda de internet para enviar atualizações a outros PCs na rede/internet. (Baseado no WinUtil)",
+    "entries": [
+      {
+        "hive": "HKEY_LOCAL_MACHINE",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization",
+        "value_name": "DODownloadMode",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": null
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "enable_end_task_taskbar",
+    "nome": "Habilitar 'Finalizar Tarefa' na barra de tarefas",
+    "descricao": "Adiciona a opção de finalizar tarefa ao clicar com botão direito num programa na barra de tarefas. (Baseado no WinUtil)",
+    "entries": [
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings",
+        "value_name": "TaskbarEndTask",
+        "value_type": "DWORD",
+        "value_ativado": 1,
+        "value_original": null
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "remove_home_gallery_explorer",
+    "nome": "Remover 'Início' e 'Galeria' do Explorer",
+    "descricao": "Remove os atalhos de Início e Galeria do Explorer de Arquivos e define 'Este Computador' como padrão ao abrir. (Baseado no WinUtil)",
+    "entries": [
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "Software\\Classes\\CLSID\\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}",
+        "value_name": "System.IsPinnedToNameSpaceTree",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": null
+      },
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "Software\\Classes\\CLSID\\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}",
+        "value_name": "System.IsPinnedToNameSpaceTree",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": null
+      },
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "value_name": "LaunchTo",
+        "value_type": "DWORD",
+        "value_ativado": 1,
+        "value_original": null
+      }
+    ],
+    "standard": false
+  },
+  {
+    "id": "disable_unsigned_rdp_warning",
+    "nome": "Desativar aviso de arquivo RDP não assinado",
+    "descricao": "Remove o aviso ao abrir arquivos de Área de Trabalho Remota (.rdp) não assinados. (Baseado no WinUtil)",
+    "entries": [
+      {
+        "hive": "HKEY_LOCAL_MACHINE",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services\\Client",
+        "value_name": "RedirectionWarningDialogVersion",
+        "value_type": "DWORD",
+        "value_ativado": 1,
+        "value_original": null
+      },
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "SOFTWARE\\Microsoft\\Terminal Server Client",
+        "value_name": "RdpLaunchConsentAccepted",
+        "value_type": "DWORD",
+        "value_ativado": 1,
+        "value_original": null
+      }
+    ],
+    "standard": false
+  },
+  {
+    "id": "disable_wpbt",
+    "nome": "Desativar WPBT (Windows Platform Binary Table)",
+    "descricao": "Impede que o fabricante do PC execute programas automaticamente na inicialização (ex: softwares antifurto). Reduz risco de segurança. (Baseado no WinUtil)",
+    "entries": [
+      {
+        "hive": "HKEY_LOCAL_MACHINE",
+        "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager",
+        "value_name": "DisableWpbtExecution",
+        "value_type": "DWORD",
+        "value_ativado": 1,
+        "value_original": null
+      }
+    ],
+    "standard": true
+  },
+  {
+    "id": "disable_storage_sense",
+    "nome": "Desativar Storage Sense",
+    "descricao": "Impede a exclusão automática de arquivos temporários pelo Windows. (Baseado no WinUtil)",
+    "entries": [
+      {
+        "hive": "HKEY_CURRENT_USER",
+        "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\StorageSense\\Parameters\\StoragePolicy",
+        "value_name": "01",
+        "value_type": "DWORD",
+        "value_ativado": 0,
+        "value_original": 1
+      }
+    ],
+    "standard": false
+  }
+]

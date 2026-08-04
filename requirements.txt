@@ -1,0 +1,3 @@
+# ACE Helper roda com a biblioteca padrão do Python (subprocess, winreg,
+# ctypes) mais o CustomTkinter para a interface moderna.
+customtkinter>=5.2.0
