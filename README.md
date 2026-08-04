@@ -13,7 +13,8 @@ Abra o **PowerShell** e rode:
 irm https://raw.githubusercontent.com/Jadissonr/Ace-helper/main/install.ps1 | iex
 ```
 
-Isso baixa e abre o ACE Helper automaticamente. **Não precisa instalar
+Isso baixa e abre o ACE Helper automaticamente, além de criar um
+atalho na área de trabalho pras próximas vezes. **Não precisa instalar
 Python, CustomTkinter ou nada além disso** — o app já vem pronto
 dentro do executável.
 
