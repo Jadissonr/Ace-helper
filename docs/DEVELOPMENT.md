@@ -33,7 +33,8 @@ ace-helper/
 │   ├── auth.py              # valida a chave de acesso e o cache local de dispositivo autorizado
 │   ├── device.py            # obtém o fingerprint (MachineGuid) do dispositivo
 │   ├── wallpaper.py         # define o papel de parede da ACE após aplicar tweaks
-│   ├── updater.py           # checa se há uma versão mais nova no GitHub Releases
+│   ├── updater.py           # checa E aplica auto-atualização do próprio ACE Helper (só funciona no .exe)
+│   ├── system_stats.py      # CPU/RAM/disco e status de admin (painel Início)
 │   ├── paths.py             # resolução de caminhos de assets (compatível com .exe)
 │   └── logger.py            # log de ações em ~/ACEHelper/logs/
 ├── data/
@@ -47,13 +48,16 @@ ace-helper/
 │   ├── wallpaper.png        # papel de parede 1920x1080 aplicado após tweaks
 │   └── app_icons/           # ícones-monograma gerados para cada app da aba Instalar
 ├── gui/
+│   ├── theme.py             # paleta de cores e fontes centralizadas (tema gamer/neon)
+│   ├── sidebar.py           # barra lateral de navegação (Início/Instalar/Tweaks/Debloat)
 │   ├── auth_window.py       # tela de chave de acesso (abre antes do app principal)
-│   ├── main_window.py       # janela principal com abas
-│   ├── installer_tab.py     # aba "Instalar Apps" (funcional)
-│   ├── tweaks_tab.py        # aba "Tweaks" (funcional)
-│   ├── debloat_tab.py       # aba "Debloat" (funcional)
+│   ├── main_window.py       # janela principal (sidebar + páginas)
+│   ├── home_tab.py          # página "Início" — estatísticas do sistema e atalhos
+│   ├── installer_tab.py     # página "Instalar Apps" (funcional)
+│   ├── tweaks_tab.py        # página "Tweaks" (funcional)
+│   ├── debloat_tab.py       # página "Debloat" (funcional)
 │   ├── scroll_fix.py        # mitigação do bug de "ghosting" ao rolar listas (bug do CustomTkinter)
-│   └── progress_widget.py   # barra de progresso + status reutilizada nas 3 abas
+│   └── progress_widget.py   # barra de progresso + status reutilizada nas páginas
 ├── cloudflare-worker/
 │   └── worker.js            # código do Worker que valida as chaves de acesso
 └── requirements.txt
@@ -147,7 +151,7 @@ aparecer.
    manualmente, senão o app abre e trava na hora de carregar as listas:
    ```
    pip install pyinstaller
-   python -m PyInstaller --onefile --windowed --name ACEHelper --icon assets/icon.ico --add-data "assets;assets" --add-data "data;data" --collect-all customtkinter --collect-all certifi main.py
+   python -m PyInstaller --onefile --windowed --name ACEHelper --icon assets/icon.ico --add-data "assets;assets" --add-data "data;data" --collect-all customtkinter --collect-all certifi --collect-all psutil main.py
    ```
    (no Windows o separador do `--add-data` é `;`; em Linux/Mac seria `:`)
    O executável final fica em `dist/ACEHelper.exe`.
@@ -186,6 +190,26 @@ Pontos importantes:
 - O driver é instalado com as flags `-s -noreboot` (silencioso, sem
   reiniciar automaticamente). Um ponto de restauração é criado antes,
   igual os outros tweaks.
+
+## Auto-atualização do ACE Helper
+
+Quando o app detecta uma versão nova nos Releases do GitHub, ele
+oferece **"Atualizar agora"** (só quando rodando como `.exe` — rodando
+do código-fonte, só oferece abrir a página do Release manualmente).
+
+Como o Windows não deixa substituir um `.exe` enquanto ele está
+rodando, o fluxo é:
+
+1. Baixa o novo `.exe` pra `ACEHelper_new.exe`, na mesma pasta do atual
+2. Gera um `.bat` temporário que fica esperando o processo atual
+   (identificado pelo PID) encerrar
+3. O app se fecha (`self.destroy()`)
+4. O `.bat` detecta que o processo sumiu, substitui o `.exe` antigo
+   pelo novo, reabre o app, e se autodeleta
+
+Isso significa que a tag do próximo Release **precisa** ter um
+`.exe` anexado com esse mesmo padrão de nome (`ACEHelper.exe`) pra
+esse fluxo funcionar — segue o mesmo processo de publicação de sempre.
 
 ## Créditos
 

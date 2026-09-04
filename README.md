@@ -24,6 +24,8 @@ Debloat, que mexem no registro do Windows).
 
 ## O que o app faz
 
+- **Início** — painel com uso de CPU/RAM/Disco em tempo real, status
+  de administrador e atalhos rápidos pras outras páginas
 - **Instalar Apps** — plataformas de jogos (Steam, Epic, Riot, Battle.net...),
   navegadores, Discord, OBS, ferramentas de performance e mais, direto
   via winget

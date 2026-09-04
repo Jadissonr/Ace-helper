@@ -20,11 +20,12 @@ from core.wallpaper import set_ace_wallpaper
 from core.nvidia_driver import check_for_update as check_nvidia_update, download_and_install as install_nvidia_driver
 from gui.scroll_fix import fix_scroll_ghosting
 from gui.progress_widget import ProgressPanel
+from gui import theme
 
-ACCENT_COLOR = "#a78bfa"
-ACCENT_HOVER = "#8b6cf0"
-BADGE_COLOR = "#a78bfa"
-OK_COLOR = "#22c55e"
+ACCENT_COLOR = theme.ACCENT
+ACCENT_HOVER = theme.ACCENT_HOVER
+BADGE_COLOR = theme.ACCENT
+OK_COLOR = theme.SUCCESS
 
 
 class TweaksTab(ctk.CTkFrame):
@@ -73,7 +74,7 @@ class TweaksTab(ctk.CTkFrame):
         )
         standard_lbl.pack(side="left", padx=(10, 0))
 
-        power_frame = ctk.CTkFrame(self, fg_color="#1e1e21", corner_radius=10)
+        power_frame = ctk.CTkFrame(self, fg_color=theme.SURFACE_ALT, corner_radius=10, border_width=1, border_color=theme.BORDER)
         power_frame.pack(fill="x", padx=5, pady=(10, 4))
 
         power_inner = ctk.CTkFrame(power_frame, fg_color="transparent")
@@ -101,7 +102,7 @@ class TweaksTab(ctk.CTkFrame):
         )
         self.btn_balanceado.pack(side="right")
 
-        nvidia_frame = ctk.CTkFrame(self, fg_color="#1e1e21", corner_radius=10)
+        nvidia_frame = ctk.CTkFrame(self, fg_color=theme.SURFACE_ALT, corner_radius=10, border_width=1, border_color=theme.BORDER)
         nvidia_frame.pack(fill="x", padx=5, pady=(0, 4))
 
         nvidia_inner = ctk.CTkFrame(nvidia_frame, fg_color="transparent")
@@ -130,7 +131,7 @@ class TweaksTab(ctk.CTkFrame):
         )
         self.btn_nvidia_checar.pack(side="right")
 
-        list_frame = ctk.CTkScrollableFrame(self, fg_color="#151517")
+        list_frame = ctk.CTkScrollableFrame(self, fg_color=theme.SURFACE)
         list_frame.pack(fill="both", expand=True, padx=5, pady=5)
         fix_scroll_ghosting(list_frame)
 

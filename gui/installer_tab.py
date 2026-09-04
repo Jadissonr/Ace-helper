@@ -17,11 +17,12 @@ from core.installer import load_games_list, install_multiple, is_winget_availabl
 from core.paths import resource_path
 from gui.scroll_fix import fix_scroll_ghosting
 from gui.progress_widget import ProgressPanel
+from gui import theme
 
-ACCENT_COLOR = "#a78bfa"
-ACCENT_HOVER = "#8b6cf0"
-CARD_COLOR = "#1e1e21"
-CARD_SELECTED_COLOR = "#2a2433"
+ACCENT_COLOR = theme.ACCENT
+ACCENT_HOVER = theme.ACCENT_HOVER
+CARD_COLOR = theme.SURFACE
+CARD_SELECTED_COLOR = "#2a2140"
 
 COLUMNS = 3
 CARD_WIDTH = 180
@@ -54,7 +55,7 @@ class InstallerTab(ctk.CTkFrame):
         )
         aviso.pack(fill="x", padx=5, pady=(10, 5))
 
-        scroll_frame = ctk.CTkScrollableFrame(self, fg_color="#151517")
+        scroll_frame = ctk.CTkScrollableFrame(self, fg_color=theme.SURFACE)
         scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
         fix_scroll_ghosting(scroll_frame)
 

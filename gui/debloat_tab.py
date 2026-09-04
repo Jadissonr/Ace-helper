@@ -17,11 +17,12 @@ from core.debloat import (
 from core.restore_point import create_restore_point
 from gui.scroll_fix import fix_scroll_ghosting
 from gui.progress_widget import ProgressPanel
+from gui import theme
 
-ACCENT_COLOR = "#a78bfa"
-ACCENT_HOVER = "#8b6cf0"
-BADGE_COLOR = "#a78bfa"
-REMOVED_COLOR = "#22c55e"
+ACCENT_COLOR = theme.ACCENT
+ACCENT_HOVER = theme.ACCENT_HOVER
+BADGE_COLOR = theme.ACCENT
+REMOVED_COLOR = theme.SUCCESS
 
 
 class DebloatTab(ctk.CTkFrame):
@@ -60,7 +61,7 @@ class DebloatTab(ctk.CTkFrame):
         )
         standard_lbl.pack(side="left", padx=(10, 0))
 
-        list_frame = ctk.CTkScrollableFrame(self, fg_color="#151517")
+        list_frame = ctk.CTkScrollableFrame(self, fg_color=theme.SURFACE)
         list_frame.pack(fill="both", expand=True, padx=5, pady=5)
         fix_scroll_ghosting(list_frame)
 
