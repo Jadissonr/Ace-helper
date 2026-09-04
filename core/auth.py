@@ -24,7 +24,7 @@ from core.device import get_device_id
 # (painel do Cloudflare -> Workers & Pages -> seu worker -> a URL
 # aparece no topo da página, algo como
 # https://ace-helper-auth.<seu-subdominio>.workers.dev).
-WORKER_URL = "https://SEU-WORKER.SEU-SUBDOMINIO.workers.dev"
+WORKER_URL = "https://ace-helper-auth.contato-swfps.workers.dev"
 
 AUTH_CACHE_FILE = os.path.join(os.path.expanduser("~"), "ACEHelper", "auth_cache.json")
 

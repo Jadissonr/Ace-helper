@@ -15,6 +15,8 @@ from core.debloat import (
     get_standard_apps
 )
 from core.restore_point import create_restore_point
+from gui.scroll_fix import fix_scroll_ghosting
+from gui.progress_widget import ProgressPanel
 
 ACCENT_COLOR = "#a78bfa"
 ACCENT_HOVER = "#8b6cf0"
@@ -60,6 +62,7 @@ class DebloatTab(ctk.CTkFrame):
 
         list_frame = ctk.CTkScrollableFrame(self, fg_color="#151517")
         list_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        fix_scroll_ghosting(list_frame)
 
         for app in self.apps:
             row = ctk.CTkFrame(list_frame, fg_color="transparent")
@@ -110,8 +113,18 @@ class DebloatTab(ctk.CTkFrame):
         )
         self.btn_atualizar.pack(side="left", padx=5)
 
+        # Barra de progresso e log só aparecem quando uma ação é
+        # disparada (ver _revelar_progresso_e_log).
+        self.progress = ProgressPanel(self)
         self.log_box = ctk.CTkTextbox(self, height=130, state="disabled")
-        self.log_box.pack(fill="both", expand=True, padx=5, pady=(0, 10))
+
+    def _revelar_progresso_e_log(self):
+        """Mostra a barra de progresso e o log, se ainda não estiverem
+        visíveis (chamado no início de qualquer ação)."""
+        if not self.progress.winfo_ismapped():
+            self.progress.pack(fill="x", padx=5, pady=(0, 8))
+        if not self.log_box.winfo_ismapped():
+            self.log_box.pack(fill="x", expand=False, padx=5, pady=(0, 10))
 
     def _append_log(self, text: str):
         self.log_box.configure(state="normal")
@@ -154,6 +167,8 @@ class DebloatTab(ctk.CTkFrame):
         self.btn_standard.configure(state="disabled")
         self.btn_remover.configure(state="disabled")
         self.btn_restaurar.configure(state="disabled")
+        self._revelar_progresso_e_log()
+        self.progress.start_indeterminate("Preparando...")
         self._append_log(f"Removendo Debloat Padrão ({len(padrao)} apps)...")
 
         thread = threading.Thread(target=self._run_acao_padrao, args=(padrao,), daemon=True)
@@ -162,19 +177,28 @@ class DebloatTab(ctk.CTkFrame):
     def _run_acao_padrao(self, padrao):
         self._criar_ponto_restauracao()
 
+        total = len(padrao)
+        completos = 0
+        self.after(0, self.progress.start_determinate, total, f"Removendo 0/{total}...")
+
         def callback(nome, sucesso, mensagem):
+            nonlocal completos
+            completos += 1
             status = "OK" if sucesso else "ERRO"
             self.after(0, self._append_log, f"[{status}] {mensagem}")
+            self.after(0, self.progress.step, completos, nome)
 
         remove_multiple(padrao, progress_callback=callback)
 
         self.after(0, self._append_log, "Debloat Padrão concluído.")
+        self.after(0, self.progress.finish, f"Debloat Padrão concluído ({total}/{total}).")
         self.after(0, self._refresh_status)
         self.after(0, lambda: self.btn_standard.configure(state="normal"))
         self.after(0, lambda: self.btn_remover.configure(state="normal"))
         self.after(0, lambda: self.btn_restaurar.configure(state="normal"))
 
     def _criar_ponto_restauracao(self):
+        self.after(0, self.progress.start_indeterminate, "Criando ponto de restauração...")
         self.after(0, self._append_log, "Criando ponto de restauração...")
         sucesso, mensagem = create_restore_point()
         status = "OK" if sucesso else "AVISO"
@@ -188,6 +212,8 @@ class DebloatTab(ctk.CTkFrame):
 
         self.btn_remover.configure(state="disabled")
         self.btn_restaurar.configure(state="disabled")
+        self._revelar_progresso_e_log()
+        self.progress.start_indeterminate("Preparando...")
         self._append_log(f"{verbo} {len(selecionados)} app(s)...")
 
         thread = threading.Thread(target=self._run_acao, args=(funcao, selecionados), daemon=True)
@@ -196,13 +222,21 @@ class DebloatTab(ctk.CTkFrame):
     def _run_acao(self, funcao, selecionados):
         self._criar_ponto_restauracao()
 
+        total = len(selecionados)
+        completos = 0
+        self.after(0, self.progress.start_determinate, total, f"Processando 0/{total}...")
+
         def callback(nome, sucesso, mensagem):
+            nonlocal completos
+            completos += 1
             status = "OK" if sucesso else "ERRO"
             self.after(0, self._append_log, f"[{status}] {mensagem}")
+            self.after(0, self.progress.step, completos, nome)
 
         funcao(selecionados, progress_callback=callback)
 
         self.after(0, self._append_log, "Concluído.")
+        self.after(0, self.progress.finish, f"Concluído ({total}/{total}).")
         self.after(0, self._refresh_status)
         self.after(0, lambda: self.btn_remover.configure(state="normal"))
         self.after(0, lambda: self.btn_restaurar.configure(state="normal"))

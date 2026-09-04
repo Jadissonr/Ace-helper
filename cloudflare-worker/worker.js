@@ -5,6 +5,11 @@
 // mesmo com o código-fonte do ACE Helper público no GitHub, ninguém
 // consegue ver ou editar essa lista sem acesso à sua conta Cloudflare.
 //
+// ATENÇÃO: esse arquivo é só uma cópia de referência do que já está
+// publicado no seu Worker (ace-helper-auth.contato-swfps.workers.dev).
+// As chaves reais já configuradas lá NÃO são reproduzidas aqui — edite
+// direto no painel do Cloudflare se precisar mudar algo.
+//
 // COMO ADICIONAR/REMOVER CHAVES:
 // Edite o array VALID_KEYS abaixo e clique em "Deploy" de novo no
 // painel do Cloudflare. Sem precisar mexer no app nem recompilar nada.

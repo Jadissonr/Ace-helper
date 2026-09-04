@@ -4,8 +4,8 @@ via winget (Windows Package Manager), já nativo no Windows 10/11.
 """
 
 import subprocess
-import os
 import json
+import os
 
 from core.logger import log
 

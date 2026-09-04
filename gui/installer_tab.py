@@ -15,6 +15,8 @@ from collections import OrderedDict
 
 from core.installer import load_games_list, install_multiple, is_winget_available, upgrade_all
 from core.paths import resource_path
+from gui.scroll_fix import fix_scroll_ghosting
+from gui.progress_widget import ProgressPanel
 
 ACCENT_COLOR = "#a78bfa"
 ACCENT_HOVER = "#8b6cf0"
@@ -54,6 +56,7 @@ class InstallerTab(ctk.CTkFrame):
 
         scroll_frame = ctk.CTkScrollableFrame(self, fg_color="#151517")
         scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        fix_scroll_ghosting(scroll_frame)
 
         grupos = self._agrupar_por_categoria()
         for categoria, itens in grupos.items():
@@ -73,8 +76,19 @@ class InstallerTab(ctk.CTkFrame):
         )
         self.btn_atualizar_tudo.pack(pady=(0, 10))
 
+        # Barra de progresso e log só aparecem quando uma ação é
+        # disparada (ver _revelar_progresso_e_log) — não ficam
+        # ocupando espaço vazio à toa na tela.
+        self.progress = ProgressPanel(self)
         self.log_box = ctk.CTkTextbox(self, height=140, state="disabled")
-        self.log_box.pack(fill="both", expand=True, padx=5, pady=(0, 10))
+
+    def _revelar_progresso_e_log(self):
+        """Mostra a barra de progresso e o log, se ainda não estiverem
+        visíveis (chamado no início de qualquer ação)."""
+        if not self.progress.winfo_ismapped():
+            self.progress.pack(fill="x", padx=5, pady=(0, 8))
+        if not self.log_box.winfo_ismapped():
+            self.log_box.pack(fill="x", expand=False, padx=5, pady=(0, 10))
 
     def _build_secao(self, parent, categoria, itens):
         secao_frame = ctk.CTkFrame(parent, fg_color="transparent")
@@ -168,19 +182,28 @@ class InstallerTab(ctk.CTkFrame):
             return
 
         self.btn_instalar.configure(state="disabled", text="Instalando...")
+        self._revelar_progresso_e_log()
+        self.progress.start_determinate(len(selecionados), f"Preparando instalação de {len(selecionados)} item(ns)...")
         self._append_log(f"Iniciando instalação de {len(selecionados)} item(ns)...")
 
         thread = threading.Thread(target=self._run_install, args=(selecionados,), daemon=True)
         thread.start()
 
     def _run_install(self, selecionados):
+        total = len(selecionados)
+        completos = 0
+
         def callback(nome, sucesso, mensagem):
+            nonlocal completos
+            completos += 1
             status = "OK" if sucesso else "ERRO"
             self.after(0, self._append_log, f"[{status}] {mensagem}")
+            self.after(0, self.progress.step, completos, nome)
 
         install_multiple(selecionados, progress_callback=callback)
 
         self.after(0, self._append_log, "Instalação concluída.")
+        self.after(0, self.progress.finish, f"Instalação concluída ({total}/{total}).")
         self.after(0, lambda: self.btn_instalar.configure(state="normal", text="Instalar selecionados"))
 
     def _on_atualizar_tudo(self):
@@ -205,6 +228,8 @@ class InstallerTab(ctk.CTkFrame):
 
         self.btn_instalar.configure(state="disabled")
         self.btn_atualizar_tudo.configure(state="disabled", text="Atualizando...")
+        self._revelar_progresso_e_log()
+        self.progress.start_indeterminate("Atualizando todos os apps via winget (pode demorar)...")
         self._append_log("Iniciando atualização de todos os apps via winget (pode demorar)...")
 
         thread = threading.Thread(target=self._run_atualizar_tudo, daemon=True)
@@ -215,5 +240,6 @@ class InstallerTab(ctk.CTkFrame):
         status = "OK" if sucesso else "ERRO"
         self.after(0, self._append_log, f"[{status}] {mensagem}")
         self.after(0, self._append_log, "Atualização finalizada.")
+        self.after(0, self.progress.finish, "Atualização finalizada.")
         self.after(0, lambda: self.btn_instalar.configure(state="normal"))
         self.after(0, lambda: self.btn_atualizar_tudo.configure(state="normal", text="🔄 Atualizar tudo"))

@@ -28,8 +28,10 @@ Debloat, que mexem no registro do Windows).
   navegadores, Discord, OBS, ferramentas de performance e mais, direto
   via winget
 - **Tweaks** — ajustes de performance e privacidade no registro do
-  Windows, com botão de aplicar o pacote recomendado de uma vez, e
-  plano de energia "Ultimate Performance" com um clique
+  Windows, com botão de aplicar o pacote recomendado de uma vez, plano
+  de energia "Ultimate Performance" com um clique, atualização do
+  driver NVIDIA, e papel de parede da ACE aplicado automaticamente
+  após os tweaks
 - **Debloat** — remove aplicativos pré-instalados desnecessários do
   Windows, com opção de restaurar
 

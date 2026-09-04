@@ -53,6 +53,14 @@ def main():
         relaunch_as_admin()
         sys.exit()
 
+    # NOTA: já tentamos aqui uma chamada manual de DPI awareness
+    # (SetProcessDpiAwareness) pra corrigir um bug de "rastro fantasma"
+    # ao rolar listas. Removemos porque o CustomTkinter já gerencia
+    # DPI awareness sozinho internamente, e a chamada manual conflitava
+    # com isso, causando um espaço vazio incorreto no topo da janela.
+    # O bug do rastro fantasma continua coberto por gui/scroll_fix.py,
+    # que não depende de DPI awareness.
+
     try:
         from gui.auth_window import AuthWindow
         from gui.main_window import MainWindow

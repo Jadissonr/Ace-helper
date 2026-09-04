@@ -2,7 +2,7 @@
 Aba "Tweaks" — lista os ajustes de registro disponíveis, mostra se cada
 um já está aplicado (lendo o registro), e permite aplicar ou reverter
 os selecionados. Roda em thread separada pra não travar a interface.
-Visual em CustomTkinter.
+Visual em CustomTkinter. Também tem o painel de Plano de Energia.
 """
 
 import tkinter as tk
@@ -16,6 +16,10 @@ from core.tweaks import (
 )
 from core.restore_point import create_restore_point
 from core.power_plan import enable_ultimate_performance, restore_balanced_plan, get_active_plan_name
+from core.wallpaper import set_ace_wallpaper
+from core.nvidia_driver import check_for_update as check_nvidia_update, download_and_install as install_nvidia_driver
+from gui.scroll_fix import fix_scroll_ghosting
+from gui.progress_widget import ProgressPanel
 
 ACCENT_COLOR = "#a78bfa"
 ACCENT_HOVER = "#8b6cf0"
@@ -29,6 +33,7 @@ class TweaksTab(ctk.CTkFrame):
         self.vars = {}
         self.status_labels = {}
         self.tweaks = load_tweaks_list()
+        self._nvidia_update_info = None
 
         self._build_ui()
         self._refresh_status()
@@ -96,8 +101,38 @@ class TweaksTab(ctk.CTkFrame):
         )
         self.btn_balanceado.pack(side="right")
 
+        nvidia_frame = ctk.CTkFrame(self, fg_color="#1e1e21", corner_radius=10)
+        nvidia_frame.pack(fill="x", padx=5, pady=(0, 4))
+
+        nvidia_inner = ctk.CTkFrame(nvidia_frame, fg_color="transparent")
+        nvidia_inner.pack(fill="x", padx=12, pady=10)
+
+        nvidia_title = ctk.CTkLabel(
+            nvidia_inner, text="🎮 Driver NVIDIA", font=ctk.CTkFont(size=12, weight="bold")
+        )
+        nvidia_title.pack(side="left")
+
+        self.nvidia_status_lbl = ctk.CTkLabel(
+            nvidia_inner, text="Clique em checar para ver a versão instalada.",
+            font=ctk.CTkFont(size=11), text_color="gray60", wraplength=280, justify="left"
+        )
+        self.nvidia_status_lbl.pack(side="left", padx=(10, 0))
+
+        self.btn_nvidia_atualizar = ctk.CTkButton(
+            nvidia_inner, text="Atualizar driver", command=self._on_atualizar_nvidia,
+            fg_color=ACCENT_COLOR, hover_color=ACCENT_HOVER, width=140, state="disabled"
+        )
+        self.btn_nvidia_atualizar.pack(side="right", padx=(6, 0))
+
+        self.btn_nvidia_checar = ctk.CTkButton(
+            nvidia_inner, text="Checar atualização", command=self._on_checar_nvidia,
+            fg_color="transparent", border_width=1, width=150
+        )
+        self.btn_nvidia_checar.pack(side="right")
+
         list_frame = ctk.CTkScrollableFrame(self, fg_color="#151517")
         list_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        fix_scroll_ghosting(list_frame)
 
         for tweak in self.tweaks:
             row = ctk.CTkFrame(list_frame, fg_color="transparent")
@@ -148,8 +183,18 @@ class TweaksTab(ctk.CTkFrame):
         )
         self.btn_atualizar.pack(side="left", padx=5)
 
+        # Barra de progresso e log só aparecem quando uma ação é
+        # disparada (ver _revelar_progresso_e_log).
+        self.progress = ProgressPanel(self)
         self.log_box = ctk.CTkTextbox(self, height=130, state="disabled")
-        self.log_box.pack(fill="both", expand=True, padx=5, pady=(0, 10))
+
+    def _revelar_progresso_e_log(self):
+        """Mostra a barra de progresso e o log, se ainda não estiverem
+        visíveis (chamado no início de qualquer ação)."""
+        if not self.progress.winfo_ismapped():
+            self.progress.pack(fill="x", padx=5, pady=(0, 8))
+        if not self.log_box.winfo_ismapped():
+            self.log_box.pack(fill="x", expand=False, padx=5, pady=(0, 10))
 
     def _append_log(self, text: str):
         self.log_box.configure(state="normal")
@@ -171,6 +216,8 @@ class TweaksTab(ctk.CTkFrame):
 
         self.btn_ultimate.configure(state="disabled")
         self.btn_balanceado.configure(state="disabled")
+        self._revelar_progresso_e_log()
+        self.progress.start_indeterminate("Ativando Ultimate Performance...")
         self._append_log("Ativando plano Ultimate Performance...")
 
         thread = threading.Thread(target=self._run_power_action, args=(enable_ultimate_performance,), daemon=True)
@@ -183,6 +230,8 @@ class TweaksTab(ctk.CTkFrame):
 
         self.btn_ultimate.configure(state="disabled")
         self.btn_balanceado.configure(state="disabled")
+        self._revelar_progresso_e_log()
+        self.progress.start_indeterminate("Restaurando plano Balanceado...")
         self._append_log("Restaurando plano Balanceado...")
 
         thread = threading.Thread(target=self._run_power_action, args=(restore_balanced_plan,), daemon=True)
@@ -192,9 +241,86 @@ class TweaksTab(ctk.CTkFrame):
         sucesso, mensagem = funcao()
         status = "OK" if sucesso else "ERRO"
         self.after(0, self._append_log, f"[{status}] {mensagem}")
+        self.after(0, self.progress.finish, mensagem)
         self.after(0, self._refresh_power_status)
         self.after(0, lambda: self.btn_ultimate.configure(state="normal"))
         self.after(0, lambda: self.btn_balanceado.configure(state="normal"))
+
+    def _on_checar_nvidia(self):
+        self.btn_nvidia_checar.configure(state="disabled", text="Checando...")
+        self.btn_nvidia_atualizar.configure(state="disabled")
+        self._revelar_progresso_e_log()
+        self.progress.start_indeterminate("Checando driver da NVIDIA...")
+        self._append_log("Checando versão do driver NVIDIA...")
+
+        thread = threading.Thread(target=self._run_checar_nvidia, daemon=True)
+        thread.start()
+
+    def _run_checar_nvidia(self):
+        info = check_nvidia_update()
+        self._nvidia_update_info = info
+
+        if info.get("error"):
+            self.after(0, self._append_log, f"[AVISO] {info['error']}")
+            self.after(0, lambda: self.nvidia_status_lbl.configure(text=info["error"]))
+            self.after(0, self.progress.finish, "Não foi possível checar o driver.")
+        else:
+            gpu = info["gpu_name"]
+            atual = info["current_version"]
+            mais_recente = info["latest_version"]
+            if info["has_update"]:
+                texto = f"{gpu}: v{atual} instalada → v{mais_recente} disponível"
+                self.after(0, lambda: self.btn_nvidia_atualizar.configure(state="normal"))
+            else:
+                texto = f"{gpu}: v{atual} já é a versão mais recente."
+            self.after(0, self._append_log, texto)
+            self.after(0, lambda: self.nvidia_status_lbl.configure(text=texto))
+            self.after(0, self.progress.finish, texto)
+
+        self.after(0, lambda: self.btn_nvidia_checar.configure(state="normal", text="Checar atualização"))
+
+    def _on_atualizar_nvidia(self):
+        info = self._nvidia_update_info
+        if not info or info.get("error") or not info.get("has_update"):
+            messagebox.showwarning("Nada pra atualizar", "Checa a atualização de novo antes de instalar.")
+            return
+
+        confirmar = messagebox.askyesno(
+            "Atualizar driver NVIDIA",
+            f"Isso vai baixar e instalar o driver NVIDIA v{info['latest_version']} "
+            f"(atual: v{info['current_version']}) silenciosamente, sem abrir o "
+            f"instalador na tela.\n\n"
+            "Atualizar driver de GPU raramente dá problema, mas pode acontecer. "
+            "Um ponto de restauração será criado antes, por segurança. Pode ser "
+            "necessário reiniciar o PC ao final.\n\nDeseja continuar?"
+        )
+        if not confirmar:
+            return
+
+        self.btn_nvidia_checar.configure(state="disabled")
+        self.btn_nvidia_atualizar.configure(state="disabled", text="Atualizando...")
+        self._revelar_progresso_e_log()
+        self._append_log(f"Iniciando atualização do driver NVIDIA para v{info['latest_version']}...")
+
+        thread = threading.Thread(target=self._run_atualizar_nvidia, args=(info,), daemon=True)
+        thread.start()
+
+    def _run_atualizar_nvidia(self, info):
+        self._criar_ponto_restauracao()
+
+        self.after(0, self.progress.start_determinate, 100, "Baixando driver NVIDIA...")
+
+        def progress_cb(baixado, total):
+            pct = int((baixado / total) * 100) if total else 0
+            self.after(0, self.progress.step, pct, f"Baixando driver ({pct}%)")
+
+        sucesso, mensagem = install_nvidia_driver(info["download_url"], progress_callback=progress_cb)
+        status = "OK" if sucesso else "ERRO"
+        self.after(0, self._append_log, f"[{status}] {mensagem}")
+        self.after(0, self.progress.finish, mensagem)
+        self.after(0, lambda: self.nvidia_status_lbl.configure(text=mensagem))
+        self.after(0, lambda: self.btn_nvidia_checar.configure(state="normal"))
+        self.after(0, lambda: self.btn_nvidia_atualizar.configure(state="normal", text="Atualizar driver"))
 
     def _refresh_status(self):
         if not WINREG_AVAILABLE:
@@ -240,6 +366,8 @@ class TweaksTab(ctk.CTkFrame):
         self.btn_standard.configure(state="disabled")
         self.btn_aplicar.configure(state="disabled")
         self.btn_reverter.configure(state="disabled")
+        self._revelar_progresso_e_log()
+        self.progress.start_indeterminate("Preparando...")
         self._append_log(f"Aplicando Tweak Padrão ({len(padrao)} ajustes)...")
 
         thread = threading.Thread(target=self._run_acao_padrao, args=(padrao,), daemon=True)
@@ -248,19 +376,40 @@ class TweaksTab(ctk.CTkFrame):
     def _run_acao_padrao(self, padrao):
         self._criar_ponto_restauracao()
 
+        total = len(padrao)
+        completos = 0
+        self.after(0, self.progress.start_determinate, total, f"Aplicando 0/{total}...")
+
         def callback(nome, sucesso, mensagem):
+            nonlocal completos
+            completos += 1
             status = "OK" if sucesso else "ERRO"
             self.after(0, self._append_log, f"[{status}] {mensagem}")
+            self.after(0, self.progress.step, completos, nome)
 
         apply_multiple(padrao, progress_callback=callback)
+        self._aplicar_wallpaper()
 
         self.after(0, self._append_log, "Tweak Padrão concluído.")
+        self.after(0, self.progress.finish, f"Tweak Padrão concluído ({total}/{total}).")
         self.after(0, self._refresh_status)
         self.after(0, lambda: self.btn_standard.configure(state="normal"))
         self.after(0, lambda: self.btn_aplicar.configure(state="normal"))
         self.after(0, lambda: self.btn_reverter.configure(state="normal"))
 
+    def _aplicar_wallpaper(self):
+        """Define o papel de parede da ACE depois de aplicar tweaks
+        (não é chamado ao reverter)."""
+        sucesso, mensagem = set_ace_wallpaper()
+        status = "OK" if sucesso else "AVISO"
+        self.after(0, self._append_log, f"[{status}] {mensagem}")
+
     def _criar_ponto_restauracao(self):
+        """Cria um ponto de restauração do Windows antes de qualquer
+        tweak ser aplicado/revertido. Roda dentro da thread de trabalho
+        (pode levar alguns segundos) e nunca bloqueia a ação principal
+        — se falhar, só avisa no log e segue em frente."""
+        self.after(0, self.progress.start_indeterminate, "Criando ponto de restauração...")
         self.after(0, self._append_log, "Criando ponto de restauração...")
         sucesso, mensagem = create_restore_point()
         status = "OK" if sucesso else "AVISO"
@@ -278,6 +427,8 @@ class TweaksTab(ctk.CTkFrame):
 
         self.btn_aplicar.configure(state="disabled")
         self.btn_reverter.configure(state="disabled")
+        self._revelar_progresso_e_log()
+        self.progress.start_indeterminate("Preparando...")
         self._append_log(f"{verbo} {len(selecionados)} tweak(s)...")
 
         thread = threading.Thread(target=self._run_acao, args=(funcao, selecionados), daemon=True)
@@ -286,13 +437,24 @@ class TweaksTab(ctk.CTkFrame):
     def _run_acao(self, funcao, selecionados):
         self._criar_ponto_restauracao()
 
+        total = len(selecionados)
+        completos = 0
+        self.after(0, self.progress.start_determinate, total, f"Processando 0/{total}...")
+
         def callback(nome, sucesso, mensagem):
+            nonlocal completos
+            completos += 1
             status = "OK" if sucesso else "ERRO"
             self.after(0, self._append_log, f"[{status}] {mensagem}")
+            self.after(0, self.progress.step, completos, nome)
 
         funcao(selecionados, progress_callback=callback)
 
+        if funcao is apply_multiple:
+            self._aplicar_wallpaper()
+
         self.after(0, self._append_log, "Concluído.")
+        self.after(0, self.progress.finish, f"Concluído ({total}/{total}).")
         self.after(0, self._refresh_status)
         self.after(0, lambda: self.btn_aplicar.configure(state="normal"))
         self.after(0, lambda: self.btn_reverter.configure(state="normal"))

@@ -28,9 +28,11 @@ ace-helper/
 │   ├── debloat.py           # remove/restaura apps UWP
 │   ├── restore_point.py     # cria ponto de restauração do Windows antes de tweaks/debloat
 │   ├── power_plan.py        # ativa/reverte o plano de energia Ultimate Performance
+│   ├── nvidia_driver.py     # checa e instala atualização do driver NVIDIA (API não-oficial)
 │   ├── feedback.py          # abre GitHub Issue pré-preenchida
 │   ├── auth.py              # valida a chave de acesso e o cache local de dispositivo autorizado
 │   ├── device.py            # obtém o fingerprint (MachineGuid) do dispositivo
+│   ├── wallpaper.py         # define o papel de parede da ACE após aplicar tweaks
 │   ├── updater.py           # checa se há uma versão mais nova no GitHub Releases
 │   ├── paths.py             # resolução de caminhos de assets (compatível com .exe)
 │   └── logger.py            # log de ações em ~/ACEHelper/logs/
@@ -42,13 +44,16 @@ ace-helper/
 │   ├── icon.ico             # ícone do app (usado na janela e no .exe)
 │   ├── icon.png             # ícone com fundo, para outros usos
 │   ├── logo_transparent.png # logo usada no header da interface
+│   ├── wallpaper.png        # papel de parede 1920x1080 aplicado após tweaks
 │   └── app_icons/           # ícones-monograma gerados para cada app da aba Instalar
 ├── gui/
 │   ├── auth_window.py       # tela de chave de acesso (abre antes do app principal)
 │   ├── main_window.py       # janela principal com abas
 │   ├── installer_tab.py     # aba "Instalar Apps" (funcional)
 │   ├── tweaks_tab.py        # aba "Tweaks" (funcional)
-│   └── debloat_tab.py       # aba "Debloat" (funcional)
+│   ├── debloat_tab.py       # aba "Debloat" (funcional)
+│   ├── scroll_fix.py        # mitigação do bug de "ghosting" ao rolar listas (bug do CustomTkinter)
+│   └── progress_widget.py   # barra de progresso + status reutilizada nas 3 abas
 ├── cloudflare-worker/
 │   └── worker.js            # código do Worker que valida as chaves de acesso
 └── requirements.txt
@@ -160,6 +165,27 @@ aparecer.
    busca automaticamente o `.exe` mais recente anexado no último
    Release (usa a API do GitHub pra achar o "latest release"), então
    não precisa editar nada nele depois da primeira configuração.
+
+## Atualização de driver NVIDIA
+
+O botão "Driver NVIDIA" na aba Tweaks depende de um endpoint **não
+documentado oficialmente pela NVIDIA**, mas usado publicamente há anos
+por ferramentas open-source de atualização de driver (referência:
+[ZenitH-AT/nvidia-update](https://github.com/ZenitH-AT/nvidia-update)).
+Pontos importantes:
+
+- Detecta a GPU e a versão atual via `nvidia-smi` (só funciona se já
+  existir algum driver NVIDIA instalado — se a pessoa nunca instalou
+  nenhum driver, o `nvidia-smi` não existe ainda, e o botão vai avisar
+  que não encontrou GPU).
+- Precisa de acesso à internet aos domínios `nvidia.com` e
+  `gfwsl.geforce.com`.
+- Como é uma API não-oficial, pode parar de funcionar sem aviso se a
+  NVIDIA mudar o formato — nesse caso, o app não trava, só mostra erro
+  ao checar/atualizar.
+- O driver é instalado com as flags `-s -noreboot` (silencioso, sem
+  reiniciar automaticamente). Um ponto de restauração é criado antes,
+  igual os outros tweaks.
 
 ## Créditos
 

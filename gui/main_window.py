@@ -1,6 +1,6 @@
 """
 Janela principal do ACE Helper (visual CustomTkinter — tema preto/roxo).
-Monta a interface com abas: Instalar Jogos, Tweaks e Debloat.
+Monta a interface com abas: Instalar Apps, Tweaks e Debloat.
 """
 
 import os
@@ -36,8 +36,8 @@ class MainWindow(ctk.CTk):
         ctk.set_default_color_theme("blue")  # base; sobrescrevemos as cores manualmente abaixo
 
         self.title(f"{APP_NAME} v{APP_VERSION}")
-        self.geometry("680x600")
-        self.minsize(560, 480)
+        self.geometry("700x680")
+        self.minsize(620, 600)
         self.configure(fg_color=BG_COLOR)
 
         if os.path.exists(ICON_PATH):
@@ -50,8 +50,17 @@ class MainWindow(ctk.CTk):
         self._check_update_async()
 
     def _build_ui(self):
+        # Layout em grid (em vez de pack) pra área das abas SEMPRE
+        # ocupar 100% do espaço restante da janela, sem vãos vazios
+        # quando a janela é redimensionada maior que o padrão.
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=0)  # header
+        self.grid_rowconfigure(1, weight=0)  # banner de atualização
+        self.grid_rowconfigure(2, weight=1)  # abas (ocupa todo o resto)
+
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
-        header_frame.pack(fill="x", padx=20, pady=(20, 5))
+        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 5))
+        self.header_frame = header_frame
 
         if os.path.exists(LOGO_PATH):
             logo_pil = Image.open(LOGO_PATH)
@@ -59,9 +68,7 @@ class MainWindow(ctk.CTk):
             target_h = 42
             target_w = int(logo_w * (target_h / logo_h))
             logo_image = ctk.CTkImage(
-                light_image=logo_pil,
-                dark_image=logo_pil,
-                size=(target_w, target_h)
+                light_image=logo_pil, dark_image=logo_pil, size=(target_w, target_h)
             )
             logo_label = ctk.CTkLabel(header_frame, image=logo_image, text="")
             logo_label.pack(side="left", padx=(0, 14))
@@ -95,19 +102,19 @@ class MainWindow(ctk.CTk):
 
         # Espaço reservado pro aviso de atualização (populado depois,
         # em segundo plano, se houver uma versão nova disponível).
-        self.update_banner_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.update_banner_frame.pack(fill="x", padx=20)
+        # height=0 é importante: sem isso, o CTkFrame usa a altura
+        # padrão dele (200px) mesmo vazio, deixando um vão enorme.
+        self.update_banner_frame = ctk.CTkFrame(self, fg_color="transparent", height=0)
+        self.update_banner_frame.grid(row=1, column=0, sticky="ew", padx=20)
 
         tabview = ctk.CTkTabview(
             self,
             fg_color=SURFACE_COLOR,
-            segmented_button_fg_color=BG_COLOR,
             segmented_button_selected_color=ACCENT_COLOR,
             segmented_button_selected_hover_color=ACCENT_HOVER,
-            segmented_button_unselected_color=BG_COLOR,
-            text_color="white",
         )
-        tabview.pack(fill="both", expand=True, padx=15, pady=15)
+        tabview.grid(row=2, column=0, sticky="nsew", padx=15, pady=15)
+        self.tabview = tabview
 
         tab_instalar = tabview.add("Instalar Apps")
         tab_tweaks = tabview.add("Tweaks")
