@@ -16,10 +16,12 @@ from gui.sidebar import Sidebar
 from gui.home_tab import HomeTab
 from gui.installer_tab import InstallerTab
 from gui.tweaks_tab import TweaksTab
+from gui.network_tab import NetworkTab
+from gui.startup_tab import StartupTab
 from gui.debloat_tab import DebloatTab
 
 APP_NAME = "ACE Helper"
-APP_VERSION = "0.5.0"
+APP_VERSION = "0.7.0"
 
 ICON_PATH = resource_path("assets", "icon.ico")
 
@@ -27,6 +29,8 @@ PAGE_TITLES = {
     "home": "Início",
     "instalar": "Instalar Apps",
     "tweaks": "Tweaks",
+    "rede": "Rede",
+    "startup": "Inicialização",
     "debloat": "Debloat",
 }
 
@@ -100,6 +104,8 @@ class MainWindow(ctk.CTk):
         self.pages["home"] = HomeTab(pages_container, on_navigate=self._navigate)
         self.pages["instalar"] = InstallerTab(pages_container)
         self.pages["tweaks"] = TweaksTab(pages_container)
+        self.pages["rede"] = NetworkTab(pages_container)
+        self.pages["startup"] = StartupTab(pages_container)
         self.pages["debloat"] = DebloatTab(pages_container)
 
         for page in self.pages.values():

@@ -17,6 +17,8 @@ NAV_ITEMS = [
     ("home", "🏠", "Início"),
     ("instalar", "📦", "Instalar Apps"),
     ("tweaks", "⚡", "Tweaks"),
+    ("rede", "🌐", "Rede"),
+    ("startup", "🚀", "Inicialização"),
     ("debloat", "🧹", "Debloat"),
 ]
 

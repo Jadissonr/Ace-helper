@@ -29,6 +29,8 @@ ace-helper/
 │   ├── restore_point.py     # cria ponto de restauração do Windows antes de tweaks/debloat
 │   ├── power_plan.py        # ativa/reverte o plano de energia Ultimate Performance
 │   ├── nvidia_driver.py     # checa e instala atualização do driver NVIDIA (API não-oficial)
+│   ├── network_tools.py     # DNS (limpar/trocar), reset TCP/IP, teste de latência
+│   ├── startup_manager.py   # lista e ativa/desativa itens de inicialização do Windows
 │   ├── feedback.py          # abre GitHub Issue pré-preenchida
 │   ├── auth.py              # valida a chave de acesso e o cache local de dispositivo autorizado
 │   ├── device.py            # obtém o fingerprint (MachineGuid) do dispositivo
@@ -55,6 +57,8 @@ ace-helper/
 │   ├── home_tab.py          # página "Início" — estatísticas do sistema e atalhos
 │   ├── installer_tab.py     # página "Instalar Apps" (funcional)
 │   ├── tweaks_tab.py        # página "Tweaks" (funcional)
+│   ├── network_tab.py       # página "Rede" — DNS, cache, reset TCP/IP, teste de latência
+│   ├── startup_tab.py       # página "Inicialização" — ativa/desativa programas de boot
 │   ├── debloat_tab.py       # página "Debloat" (funcional)
 │   ├── scroll_fix.py        # mitigação do bug de "ghosting" ao rolar listas (bug do CustomTkinter)
 │   └── progress_widget.py   # barra de progresso + status reutilizada nas páginas

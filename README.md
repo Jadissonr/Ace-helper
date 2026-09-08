@@ -34,6 +34,10 @@ Debloat, que mexem no registro do Windows).
   de energia "Ultimate Performance" com um clique, atualização do
   driver NVIDIA, e papel de parede da ACE aplicado automaticamente
   após os tweaks
+- **Rede** — troca de servidor DNS (Cloudflare/Google), limpeza de
+  cache de DNS, reset da pilha TCP/IP e teste rápido de latência
+- **Inicialização** — ativa/desativa programas que abrem sozinhos com
+  o Windows (mesmo mecanismo do Gerenciador de Tarefas — reversível)
 - **Debloat** — remove aplicativos pré-instalados desnecessários do
   Windows, com opção de restaurar
 

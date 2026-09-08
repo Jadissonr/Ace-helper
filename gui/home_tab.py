@@ -79,12 +79,14 @@ class HomeTab(ctk.CTkFrame):
 
         shortcuts_row = ctk.CTkFrame(self, fg_color="transparent")
         shortcuts_row.pack(fill="x", padx=5)
-        for i in range(3):
+        for i in range(5):
             shortcuts_row.grid_columnconfigure(i, weight=1)
 
         self._build_shortcut(shortcuts_row, "📦", "Instalar Apps", "Steam, Discord, navegadores e mais", "instalar", 0)
         self._build_shortcut(shortcuts_row, "⚡", "Tweaks", "Otimize performance e privacidade", "tweaks", 1)
-        self._build_shortcut(shortcuts_row, "🧹", "Debloat", "Remova apps desnecessários do Windows", "debloat", 2)
+        self._build_shortcut(shortcuts_row, "🌐", "Rede", "DNS, cache e teste de latência", "rede", 2)
+        self._build_shortcut(shortcuts_row, "🚀", "Inicialização", "Gerencie programas de boot", "startup", 3)
+        self._build_shortcut(shortcuts_row, "🧹", "Debloat", "Remova apps desnecessários do Windows", "debloat", 4)
 
     def _build_stat_card(self, parent, key, title, col):
         card = theme.glow_card(parent)
