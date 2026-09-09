@@ -143,19 +143,48 @@ def self_update(download_url: str, progress_callback=None):
         return False, f"Erro ao baixar atualização: {e}"
 
     pid = os.getpid()
+    log_path = os.path.join(tempfile.gettempdir(), "ace_helper_update_log.txt")
     bat_path = os.path.join(tempfile.gettempdir(), "ace_helper_update.bat")
-    bat_content = (
-        "@echo off\n"
-        ":wait_loop\n"
-        f'tasklist /FI "PID eq {pid}" 2^>NUL | find /I "{pid}" >NUL\n'
-        'if "%ERRORLEVEL%"=="0" (\n'
-        "    timeout /t 1 /nobreak >NUL\n"
-        "    goto wait_loop\n"
-        ")\n"
-        f'move /Y "{new_exe_path}" "{current_exe}" >NUL\n'
-        f'start "" "{current_exe}"\n'
-        'del "%~f0"\n'
+
+    # O script espera o processo antigo fechar, depois tenta trocar o
+    # arquivo com algumas tentativas (o antivírus às vezes segura uma
+    # trava no .exe recém-baixado por um instante, o que fazia a troca
+    # falhar silenciosamente antes dessa versão). Cada etapa é
+    # registrada num log próprio pra facilitar diagnóstico se algo
+    # ainda assim der errado.
+    bat_content = f"""@echo off
+setlocal enabledelayedexpansion
+echo [%DATE% %TIME%] Iniciando atualizacao do ACE Helper > "{log_path}"
+
+:wait_loop
+tasklist /FI "PID eq {pid}" 2^>NUL | find /I "{pid}" >NUL
+if "%ERRORLEVEL%"=="0" (
+    timeout /t 1 /nobreak >NUL
+    goto wait_loop
+)
+echo [%DATE% %TIME%] Processo antigo encerrado (PID {pid}) >> "{log_path}"
+
+set RETRY=0
+:retry_move
+move /Y "{new_exe_path}" "{current_exe}" >> "{log_path}" 2>&1
+if exist "{new_exe_path}" (
+    set /a RETRY+=1
+    echo [%DATE% %TIME%] Tentativa !RETRY! de substituir o arquivo falhou >> "{log_path}"
+    if !RETRY! LSS 10 (
+        timeout /t 1 /nobreak >NUL
+        goto retry_move
+    ) else (
+        echo [%DATE% %TIME%] ERRO: nao foi possivel substituir o arquivo apos 10 tentativas. Reabrindo a versao antiga. >> "{log_path}"
+        start "" "{current_exe}"
+        del "%~f0"
+        exit /b 1
     )
+)
+
+echo [%DATE% %TIME%] Arquivo substituido com sucesso, reabrindo >> "{log_path}"
+start "" "{current_exe}"
+del "%~f0"
+"""
 
     try:
         with open(bat_path, "w", encoding="utf-8") as f:
@@ -169,5 +198,5 @@ def self_update(download_url: str, progress_callback=None):
         log(f"Erro ao preparar script de atualização: {e}")
         return False, f"Não foi possível preparar a atualização: {e}"
 
-    log("Atualização baixada, script auxiliar preparado. Fechando pra trocar de versão...")
+    log(f"Atualização baixada, script auxiliar preparado (log em {log_path}). Fechando pra trocar de versão...")
     return True, "Atualização baixada. O ACE Helper vai fechar e reabrir na nova versão em instantes."

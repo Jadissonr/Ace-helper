@@ -255,6 +255,14 @@ recurso. Os detalhes de cada checagem (versão encontrada, se achou o
 (`~/ACEHelper/logs/ace_helper.log`) pra facilitar diagnóstico se
 acontecer de novo.
 
+**Se a troca do arquivo falhar** (baixa mas não atualiza de verdade —
+sintoma comum de antivírus travando o `.exe` recém-baixado por um
+instante): o script auxiliar tenta a troca até 10 vezes, com 1
+segundo de intervalo entre tentativas, e registra cada tentativa em
+`%TEMP%\ace_helper_update_log.txt`. Se mesmo assim falhar depois de
+10 tentativas, ele reabre a versão antiga (não deixa o usuário sem
+app nenhum) e você pode checar esse log pra ver o motivo exato.
+
 ## Créditos
 
 Parte da lista de tweaks (a partir do "Histórico de Atividades" em
