@@ -21,7 +21,7 @@ from gui.startup_tab import StartupTab
 from gui.debloat_tab import DebloatTab
 
 APP_NAME = "ACE Helper"
-APP_VERSION = "0.7.2"
+APP_VERSION = "0.7.5"
 
 ICON_PATH = resource_path("assets", "icon.ico")
 
