@@ -53,22 +53,30 @@ def check_for_update(current_version: str, timeout: int = 6):
         resp = requests.get(RELEASES_API, timeout=timeout)
         if resp.status_code != 200:
             resultado["message"] = "Não foi possível checar atualizações."
+            log(f"check_for_update: status HTTP {resp.status_code} ao consultar {RELEASES_API}")
             return resultado
 
         data = resp.json()
         latest_tag = data.get("tag_name", "")
         if not latest_tag:
             resultado["message"] = "Release mais recente não informou uma versão."
+            log("check_for_update: release mais recente sem tag_name.")
             return resultado
 
         resultado["latest_version"] = latest_tag
 
-        asset = next(
-            (a for a in data.get("assets", []) if a.get("name", "").endswith(".exe")),
-            None,
-        )
+        assets = data.get("assets", [])
+        asset = next((a for a in assets if a.get("name", "").endswith(".exe")), None)
         if asset:
             resultado["download_url"] = asset.get("browser_download_url")
+        else:
+            nomes = [a.get("name", "?") for a in assets]
+            log(f"check_for_update: nenhum .exe encontrado nos assets do release {latest_tag}. Assets: {nomes}")
+
+        log(
+            f"check_for_update: atual={current_version} | mais_recente={latest_tag} | "
+            f"download_url={'OK' if resultado['download_url'] else 'AUSENTE'} | frozen={is_frozen()}"
+        )
 
         if _parse_version(latest_tag) > _parse_version(current_version):
             resultado["has_update"] = True
@@ -80,9 +88,11 @@ def check_for_update(current_version: str, timeout: int = 6):
 
     except requests.exceptions.RequestException as e:
         resultado["message"] = f"Erro ao checar atualização: {e}"
+        log(f"check_for_update: erro de rede: {e}")
         return resultado
     except Exception as e:
         resultado["message"] = f"Erro inesperado ao checar atualização: {e}"
+        log(f"check_for_update: erro inesperado: {e}")
         return resultado
 
 

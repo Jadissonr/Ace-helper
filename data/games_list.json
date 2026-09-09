@@ -1,19 +1,149 @@
 [
-  {"id": "steam", "categoria": "Plataformas de Jogos", "nome": "Steam", "winget_id": "Valve.Steam", "cor": "#1b2838", "sigla": "ST"},
-  {"id": "epic", "categoria": "Plataformas de Jogos", "nome": "Epic Games Launcher", "winget_id": "EpicGames.EpicGamesLauncher", "cor": "#2a2a2a", "sigla": "EP"},
-  {"id": "ubisoft", "categoria": "Plataformas de Jogos", "nome": "Ubisoft Connect", "winget_id": "Ubisoft.Connect", "cor": "#0070ff", "sigla": "UB"},
-  {"id": "ea", "categoria": "Plataformas de Jogos", "nome": "EA App", "winget_id": "ElectronicArts.EADesktop", "cor": "#ff4747", "sigla": "EA"},
-  {"id": "gog", "categoria": "Plataformas de Jogos", "nome": "GOG Galaxy", "winget_id": "GOG.Galaxy", "cor": "#8b31ff", "sigla": "GG"},
-  {"id": "battlenet", "categoria": "Plataformas de Jogos", "nome": "Battle.net", "winget_id": "Blizzard.BattleNet", "cor": "#00aeff", "sigla": "BN"},
-  {"id": "riot", "categoria": "Plataformas de Jogos", "nome": "Riot Client", "winget_id": "RiotGames.RiotClient", "cor": "#d13639", "sigla": "RI"},
-  {"id": "discord", "categoria": "Utilitários", "nome": "Discord", "winget_id": "Discord.Discord", "cor": "#5865f2", "sigla": "DC"},
-  {"id": "teamspeak", "categoria": "Utilitários", "nome": "TeamSpeak 3", "winget_id": "TeamSpeakSystems.TeamSpeak3.Client", "cor": "#2580c3", "sigla": "TS"},
-  {"id": "chrome", "categoria": "Navegadores", "nome": "Google Chrome", "winget_id": "Google.Chrome", "cor": "#4285f4", "sigla": "CH"},
-  {"id": "firefox", "categoria": "Navegadores", "nome": "Mozilla Firefox", "winget_id": "Mozilla.Firefox", "cor": "#ff9500", "sigla": "FF"},
-  {"id": "operagx", "categoria": "Navegadores", "nome": "Opera GX", "winget_id": "Opera.OperaGX", "cor": "#eb0000", "sigla": "GX"},
-  {"id": "obs", "categoria": "Utilitários", "nome": "OBS Studio", "winget_id": "OBSProject.OBSStudio", "cor": "#4f5b93", "sigla": "OB"},
-  {"id": "streamlabs", "categoria": "Utilitários", "nome": "Streamlabs Desktop", "winget_id": "Streamlabs.StreamlabsOBS", "cor": "#31c3a2", "sigla": "SL"},
-  {"id": "afterburner", "categoria": "Utilitários", "nome": "MSI Afterburner", "winget_id": "Guru3D.Afterburner", "cor": "#e6000d", "sigla": "AB"},
-  {"id": "geforce", "categoria": "Utilitários", "nome": "NVIDIA GeForce Experience", "winget_id": "Nvidia.GeForceExperience", "cor": "#76b900", "sigla": "NV"},
-  {"id": "spotify", "categoria": "Utilitários", "nome": "Spotify", "winget_id": "Spotify.Spotify", "cor": "#1db954", "sigla": "SP"}
+  {
+    "id": "steam",
+    "categoria": "Plataformas de Jogos",
+    "nome": "Steam",
+    "winget_id": "Valve.Steam",
+    "cor": "#1b2838",
+    "sigla": "ST"
+  },
+  {
+    "id": "epic",
+    "categoria": "Plataformas de Jogos",
+    "nome": "Epic Games Launcher",
+    "winget_id": "EpicGames.EpicGamesLauncher",
+    "cor": "#2a2a2a",
+    "sigla": "EP"
+  },
+  {
+    "id": "ubisoft",
+    "categoria": "Plataformas de Jogos",
+    "nome": "Ubisoft Connect",
+    "winget_id": "Ubisoft.Connect",
+    "cor": "#0070ff",
+    "sigla": "UB"
+  },
+  {
+    "id": "ea",
+    "categoria": "Plataformas de Jogos",
+    "nome": "EA App",
+    "winget_id": "ElectronicArts.EADesktop",
+    "cor": "#ff4747",
+    "sigla": "EA"
+  },
+  {
+    "id": "gog",
+    "categoria": "Plataformas de Jogos",
+    "nome": "GOG Galaxy",
+    "winget_id": "GOG.Galaxy",
+    "cor": "#8b31ff",
+    "sigla": "GG"
+  },
+  {
+    "id": "battlenet",
+    "categoria": "Plataformas de Jogos",
+    "nome": "Battle.net",
+    "winget_id": "Blizzard.BattleNet",
+    "cor": "#00aeff",
+    "sigla": "BN"
+  },
+  {
+    "id": "riot",
+    "categoria": "Plataformas de Jogos",
+    "nome": "Riot Client",
+    "winget_id": "RiotGames.RiotClient",
+    "cor": "#d13639",
+    "sigla": "RI"
+  },
+  {
+    "id": "discord",
+    "categoria": "Utilitários",
+    "nome": "Discord",
+    "winget_id": "Discord.Discord",
+    "cor": "#5865f2",
+    "sigla": "DC"
+  },
+  {
+    "id": "teamspeak",
+    "categoria": "Utilitários",
+    "nome": "TeamSpeak 3",
+    "winget_id": "TeamSpeakSystems.TeamSpeakClient",
+    "cor": "#2580c3",
+    "sigla": "TS",
+    "remove_bundled": [
+      "Overwolf"
+    ]
+  },
+  {
+    "id": "chrome",
+    "categoria": "Navegadores",
+    "nome": "Google Chrome",
+    "winget_id": "Google.Chrome",
+    "cor": "#4285f4",
+    "sigla": "CH"
+  },
+  {
+    "id": "firefox",
+    "categoria": "Navegadores",
+    "nome": "Mozilla Firefox",
+    "winget_id": "Mozilla.Firefox",
+    "cor": "#ff9500",
+    "sigla": "FF"
+  },
+  {
+    "id": "operagx",
+    "categoria": "Navegadores",
+    "nome": "Opera GX",
+    "winget_id": "Opera.OperaGX",
+    "cor": "#eb0000",
+    "sigla": "GX"
+  },
+  {
+    "id": "obs",
+    "categoria": "Utilitários",
+    "nome": "OBS Studio",
+    "winget_id": "OBSProject.OBSStudio",
+    "cor": "#4f5b93",
+    "sigla": "OB"
+  },
+  {
+    "id": "streamlabs",
+    "categoria": "Utilitários",
+    "nome": "Streamlabs Desktop",
+    "winget_id": "Streamlabs.StreamlabsOBS",
+    "cor": "#31c3a2",
+    "sigla": "SL"
+  },
+  {
+    "id": "afterburner",
+    "categoria": "Utilitários",
+    "nome": "MSI Afterburner",
+    "winget_id": "Guru3D.Afterburner",
+    "cor": "#e6000d",
+    "sigla": "AB"
+  },
+  {
+    "id": "geforce",
+    "categoria": "Utilitários",
+    "nome": "NVIDIA GeForce Experience",
+    "winget_id": "Nvidia.GeForceExperience",
+    "cor": "#76b900",
+    "sigla": "NV"
+  },
+  {
+    "id": "spotify",
+    "categoria": "Utilitários",
+    "nome": "Spotify",
+    "winget_id": "Spotify.Spotify",
+    "cor": "#1db954",
+    "sigla": "SP"
+  },
+  {
+    "id": "faceitac",
+    "categoria": "Plataformas de Jogos",
+    "nome": "FACEIT Anti-Cheat",
+    "winget_id": "FACEITLTD.FACEITAC",
+    "cor": "#ff5500",
+    "sigla": "FA"
+  }
 ]

@@ -36,8 +36,65 @@ def is_winget_available() -> bool:
         return False
 
 
-def install_app(winget_id: str, nome: str):
-    """Instala um app via winget. Retorna (sucesso: bool, mensagem: str)."""
+def _run_powershell(script: str, timeout: int = 90):
+    try:
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script],
+            capture_output=True, text=True, timeout=timeout,
+            creationflags=_NO_WINDOW_FLAGS
+        )
+        return result.returncode, result.stdout.strip(), result.stderr.strip()
+    except FileNotFoundError:
+        return -1, "", "PowerShell não disponível neste sistema."
+    except subprocess.TimeoutExpired:
+        return -1, "", "Tempo esgotado."
+
+
+def _remove_bundled_extras(name_fragments: list):
+    """
+    Alguns instaladores (ex: TeamSpeak) empacotam programas extras
+    indesejados (ex: Overwolf) que o winget não rastreia como pacote
+    próprio, então não dá pra bloquear via flag de instalação. Em vez
+    disso, procuramos por qualquer programa cujo nome contenha um dos
+    fragmentos indicados nas entradas de desinstalação do Windows (o
+    mesmo lugar que "Aplicativos e Recursos" usa) e desinstalamos
+    silenciosamente. Retorna a lista de nomes efetivamente removidos.
+    """
+    removidos = []
+    for fragment in name_fragments:
+        script = f"""
+$ErrorActionPreference = 'SilentlyContinue'
+$paths = @(
+    'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',
+    'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',
+    'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*'
+)
+$found = Get-ItemProperty $paths | Where-Object {{ $_.DisplayName -like '*{fragment}*' }}
+foreach ($app in $found) {{
+    try {{
+        if ($app.QuietUninstallString) {{
+            cmd /c $app.QuietUninstallString | Out-Null
+        }} elseif ($app.UninstallString) {{
+            $cmd = $app.UninstallString
+            if ($cmd -notmatch '(?i)/S|/silent|/quiet|/verysilent') {{ $cmd = "$cmd /S" }}
+            cmd /c $cmd | Out-Null
+        }}
+        Write-Output "ACE_HELPER_REMOVIDO::$($app.DisplayName)"
+    }} catch {{}}
+}}
+"""
+        _, out, _err = _run_powershell(script)
+        for linha in out.splitlines():
+            if linha.startswith("ACE_HELPER_REMOVIDO::"):
+                removidos.append(linha.split("::", 1)[1])
+    return removidos
+
+
+def install_app(winget_id: str, nome: str, remove_bundled: list = None):
+    """Instala um app via winget. Se 'remove_bundled' for informado,
+    tenta desinstalar automaticamente qualquer extra indesejado que
+    tenha vindo junto (ex: Overwolf empacotado com o TeamSpeak).
+    Retorna (sucesso: bool, mensagem: str)."""
     log(f"Iniciando instalação: {nome} ({winget_id})")
 
     try:
@@ -46,7 +103,9 @@ def install_app(winget_id: str, nome: str):
                 "winget", "install",
                 "--id", winget_id,
                 "-e",
+                "--source", "winget",
                 "--silent",
+                "--disable-interactivity",
                 "--accept-package-agreements",
                 "--accept-source-agreements",
             ],
@@ -56,7 +115,15 @@ def install_app(winget_id: str, nome: str):
 
         if result.returncode == 0:
             log(f"Sucesso: {nome} instalado.")
-            return True, f"{nome} instalado com sucesso."
+            mensagem = f"{nome} instalado com sucesso."
+
+            if remove_bundled:
+                removidos = _remove_bundled_extras(remove_bundled)
+                if removidos:
+                    log(f"Extras removidos após instalar {nome}: {', '.join(removidos)}")
+                    mensagem += f" Removido automaticamente: {', '.join(removidos)}."
+
+            return True, mensagem
         else:
             erro = result.stderr.strip() or result.stdout.strip()
             log(f"Falha ao instalar {nome}: {erro}")
@@ -73,12 +140,14 @@ def install_app(winget_id: str, nome: str):
 def install_multiple(apps: list, progress_callback=None):
     """
     Instala uma lista de apps em sequência.
-    apps: lista de dicts com 'nome' e 'winget_id'
+    apps: lista de dicts com 'nome', 'winget_id' e opcionalmente 'remove_bundled'
     progress_callback: função chamada após cada instalação com (nome, sucesso, mensagem)
     """
     resultados = []
     for app in apps:
-        sucesso, mensagem = install_app(app["winget_id"], app["nome"])
+        sucesso, mensagem = install_app(
+            app["winget_id"], app["nome"], remove_bundled=app.get("remove_bundled")
+        )
         resultados.append((app["nome"], sucesso, mensagem))
         if progress_callback:
             progress_callback(app["nome"], sucesso, mensagem)
@@ -97,6 +166,7 @@ def upgrade_all():
             [
                 "winget", "upgrade", "--all",
                 "--silent",
+                "--disable-interactivity",
                 "--accept-package-agreements",
                 "--accept-source-agreements",
                 "--include-unknown",

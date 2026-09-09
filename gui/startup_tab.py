@@ -20,7 +20,13 @@ class StartupTab(ctk.CTkFrame):
         self.items = []
 
         self._build_ui()
-        self._load_items()
+        # Agenda o carregamento pra depois do mainloop já estar
+        # rodando, em vez de disparar a thread aqui direto. Sem isso,
+        # se a leitura do registro terminar rápido demais, a thread
+        # tenta atualizar a interface (via self.after) antes do
+        # mainloop ter começado de verdade, e o Tkinter reclama com
+        # "main thread is not in main loop".
+        self.after(200, self._load_items)
 
     def _build_ui(self):
         header_row = ctk.CTkFrame(self, fg_color="transparent")

@@ -21,7 +21,7 @@ from gui.startup_tab import StartupTab
 from gui.debloat_tab import DebloatTab
 
 APP_NAME = "ACE Helper"
-APP_VERSION = "0.7.0"
+APP_VERSION = "0.7.2"
 
 ICON_PATH = resource_path("assets", "icon.ico")
 
@@ -55,7 +55,10 @@ class MainWindow(ctk.CTk):
 
         self.pages = {}
         self._build_ui()
-        self._check_update_async()
+        # Agenda pra depois do mainloop já estar rodando (mesmo motivo
+        # do StartupTab — evita corrida entre a thread de rede e o
+        # início do mainloop).
+        self.after(300, self._check_update_async)
 
     def _build_ui(self):
         self.grid_columnconfigure(0, weight=0)
@@ -152,7 +155,7 @@ class MainWindow(ctk.CTk):
         )
         self.update_label.pack(side="left")
 
-        if is_frozen() and download_url:
+        if is_frozen():
             self.btn_atualizar_agora = ctk.CTkButton(
                 inner, text="Atualizar agora", command=lambda: self._on_atualizar_agora(download_url),
                 fg_color=theme.ACCENT, hover_color=theme.ACCENT_HOVER, width=130, height=26
@@ -181,6 +184,22 @@ class MainWindow(ctk.CTk):
         thread.start()
 
     def _run_self_update(self, download_url):
+        # Busca a URL de download de novo, na hora — em vez de confiar
+        # só na que foi capturada quando o aviso apareceu (evita
+        # problema se aquela consulta tiver vindo incompleta por
+        # qualquer instabilidade pontual da API do GitHub).
+        resultado_fresco = check_for_update(APP_VERSION)
+        if resultado_fresco.get("download_url"):
+            download_url = resultado_fresco["download_url"]
+
+        if not download_url:
+            self.after(0, lambda: self.update_label.configure(
+                text="Não foi possível encontrar o .exe do release. Abrindo página do GitHub..."
+            ))
+            self.after(0, open_releases_page)
+            self.after(0, lambda: self.btn_atualizar_agora.configure(state="normal", text="Atualizar agora"))
+            return
+
         def progress_cb(baixado, total):
             pct = int((baixado / total) * 100) if total else 0
             self.after(0, lambda: self.update_label.configure(text=f"Baixando atualização... {pct}%"))

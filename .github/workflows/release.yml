@@ -1,0 +1,44 @@
+name: Build and Release ACE Helper
+
+# Dispara sozinho toda vez que uma tag comecando com "v" for enviada
+# (ex: v0.7.3). E so isso que voce precisa fazer manualmente daqui pra
+# frente: nao precisa mais compilar na sua maquina nem criar o Release
+# pelo site do GitHub.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Compilar o .exe
+        run: |
+          python -m PyInstaller --onefile --windowed --name ACEHelper --icon assets/icon.ico --add-data "assets;assets" --add-data "data;data" --collect-all customtkinter --collect-all certifi --collect-all psutil main.py
+
+      - name: Publicar Release com o .exe anexado
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ACEHelper.exe
+          name: ACE Helper ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

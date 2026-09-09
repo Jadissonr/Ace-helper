@@ -64,6 +64,9 @@ ace-helper/
 │   └── progress_widget.py   # barra de progresso + status reutilizada nas páginas
 ├── cloudflare-worker/
 │   └── worker.js            # código do Worker que valida as chaves de acesso
+├── .github/
+│   └── workflows/
+│       └── release.yml      # compila e publica o Release automaticamente ao enviar uma tag "v*"
 └── requirements.txt
 ```
 
@@ -77,6 +80,13 @@ seção nova, adicione o nome dela em `CATEGORIA_ORDEM` no topo de
 `winget search <nome>`), `cor` (hex, cor de fundo do ícone-monograma
 padrão) e `sigla` (1-3 letras mostradas no ícone). Depois gere o ícone
 correspondente em `assets/app_icons/<id>.png` (128x128).
+
+Se o instalador de algum app empacotar programas extras indesejados
+(ex: o TeamSpeak vem com o Overwolf embutido, sem flag do winget pra
+bloquear), adicione um campo `remove_bundled` com uma lista de nomes
+(ou fragmentos de nome) — o app procura por qualquer programa com esse
+nome nas entradas de desinstalação do Windows e desinstala
+automaticamente logo depois da instalação principal.
 
 Se você tiver o ícone oficial do app (baixado do brand kit da empresa,
 por exemplo) e quiser usar em vez do monograma gerado, é só substituir
@@ -146,33 +156,52 @@ chave dessa pessoa e quer forçar uma nova validação), apague esse
 arquivo — na próxima abertura do app, a tela de chave volta a
 aparecer.
 
-## Compilando e publicando uma nova versão
+## Publicando uma nova versão (automático via GitHub Actions)
 
-1. Compile o app pra `.exe`. O CustomTkinter precisa que os assets
-   internos dele sejam incluídos manualmente no build, senão o `.exe`
-   abre sem estilo nenhum — e as pastas `assets/` (ícone e logo) e
-   `data/` (listas de tweaks/apps/jogos) também precisam ser embutidas
-   manualmente, senão o app abre e trava na hora de carregar as listas:
+Desde que o workflow `.github/workflows/release.yml` foi adicionado,
+publicar uma versão nova é bem mais simples — não precisa mais
+compilar na sua máquina nem criar o Release pelo site do GitHub. O
+GitHub compila e publica sozinho, num servidor deles, toda vez que
+você envia uma tag.
+
+1. Edite `APP_VERSION` em `gui/main_window.py` pra nova versão (ex:
+   `"0.7.3"`).
+
+2. Comita e envia essa mudança normalmente:
    ```
-   pip install pyinstaller
-   python -m PyInstaller --onefile --windowed --name ACEHelper --icon assets/icon.ico --add-data "assets;assets" --add-data "data;data" --collect-all customtkinter --collect-all certifi --collect-all psutil main.py
+   git add .
+   git commit -m "Bump versao para 0.7.3"
+   git push
    ```
-   (no Windows o separador do `--add-data` é `;`; em Linux/Mac seria `:`)
-   O executável final fica em `dist/ACEHelper.exe`.
 
-2. Suba o código pro GitHub (sem a pasta `dist/` e `build/`, essas são
-   geradas localmente — já estão no `.gitignore`).
+3. Crie e envie a tag correspondente (com o `v` na frente — **precisa
+   bater exatamente** com o `APP_VERSION` do passo 1):
+   ```
+   git tag v0.7.3
+   git push origin v0.7.3
+   ```
 
-3. No GitHub, crie um **Release** (aba "Releases" → "Create a new release")
-   e anexe o `ACEHelper.exe` gerado no passo 1. **Importante**: a tag
-   do Release (ex: `v0.4.0`) deve bater com `APP_VERSION` em
-   `gui/main_window.py` — é essa comparação que faz o aviso de
-   atualização dentro do app funcionar corretamente.
+4. Pronto. Isso já dispara o workflow automaticamente. Acompanhe o
+   progresso em `github.com/Jadissonr/Ace-helper/actions` — leva
+   alguns minutos (o GitHub baixa as dependências e compila do zero
+   toda vez). Quando terminar, o Release já aparece publicado com o
+   `.exe` anexado, sem você precisar tocar em nada.
 
-4. Pronto — o `install.ps1` já aponta pro repositório certo e sempre
-   busca automaticamente o `.exe` mais recente anexado no último
-   Release (usa a API do GitHub pra achar o "latest release"), então
-   não precisa editar nada nele depois da primeira configuração.
+### Se precisar compilar localmente mesmo assim
+
+Pra testar antes de publicar, ou se o workflow falhar por algum
+motivo, o comando manual continua funcionando normalmente:
+```
+pip install pyinstaller
+python -m PyInstaller --onefile --windowed --name ACEHelper --icon assets/icon.ico --add-data "assets;assets" --add-data "data;data" --collect-all customtkinter --collect-all certifi --collect-all psutil main.py
+```
+(no Windows o separador do `--add-data` é `;`; em Linux/Mac seria `:`)
+O executável fica em `dist/ACEHelper.exe`. Nesse caso, sobe o Release
+manualmente pelo site como antes.
+
+O `install.ps1` sempre busca automaticamente o `.exe` mais recente
+anexado no último Release (via API do GitHub), então não precisa
+editar nada nele depois da configuração inicial.
 
 ## Atualização de driver NVIDIA
 
@@ -214,6 +243,17 @@ rodando, o fluxo é:
 Isso significa que a tag do próximo Release **precisa** ter um
 `.exe` anexado com esse mesmo padrão de nome (`ACEHelper.exe`) pra
 esse fluxo funcionar — segue o mesmo processo de publicação de sempre.
+
+**Nota sobre robustez**: a URL de download é buscada de novo na hora
+que a pessoa clica em "Atualizar agora" (não só na checagem inicial),
+porque a API do GitHub sem autenticação tem limite de 60 requisições
+por hora por IP — se a checagem inicial pegar um momento de
+instabilidade/limite atingido e não achar a URL do `.exe`, o clique
+tenta de novo antes de desistir e abrir o navegador como último
+recurso. Os detalhes de cada checagem (versão encontrada, se achou o
+`.exe`, se está rodando congelado) ficam registrados no log
+(`~/ACEHelper/logs/ace_helper.log`) pra facilitar diagnóstico se
+acontecer de novo.
 
 ## Créditos
 
